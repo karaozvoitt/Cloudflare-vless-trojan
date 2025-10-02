@@ -1,19 +1,26 @@
 name: Deploy to Cloudflare Workers
 
 on:
+  # 自动触发：当 nat64*.js 文件在 main 分支更新时
   push:
     paths:
       - 'Vless_workers_pages/nat64*.js'
     branches:
       - main
 
+  # 手动触发：可在 GitHub Actions 页面点击运行
+  workflow_dispatch:
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout repo
+      # 第一步：拉取仓库代码
+      - name: Checkout repository
         uses: actions/checkout@v3
 
+      # 第二步：部署 JS 到 Cloudflare Workers
       - name: Deploy to Cloudflare Workers
         run: |
           curl -X PUT "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CF_ACCOUNT_ID }}/workers/scripts/${{ secrets.CF_WORKER_NAME }}" \
