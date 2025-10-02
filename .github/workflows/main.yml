@@ -17,9 +17,23 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Deploy as ESModule to Cloudflare Workers
+      - name: Deploy ESModule via multipart/form-data
         run: |
+          boundary="BOUNDARY123"
+          echo "--$boundary" > payload.txt
+          echo 'Content-Disposition: form-data; name="metadata"; filename="metadata.json"' >> payload.txt
+          echo "Content-Type: application/json" >> payload.txt
+          echo "" >> payload.txt
+          echo '{"main_module":"nat64套壳版混淆.js"}' >> payload.txt
+
+          echo "--$boundary" >> payload.txt
+          echo 'Content-Disposition: form-data; name="nat64套壳版混淆.js"; filename="nat64套壳版混淆.js"' >> payload.txt
+          echo "Content-Type: application/javascript" >> payload.txt
+          echo "" >> payload.txt
+          cat Vless_workers_pages/nat64套壳版混淆.js >> payload.txt
+          echo "--$boundary--" >> payload.txt
+
           curl -X PUT "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CF_ACCOUNT_ID }}/workers/scripts/${{ secrets.CF_WORKER_NAME }}" \
           -H "Authorization: Bearer ${{ secrets.CF_API_TOKEN }}" \
-          -H "Content-Type: application/javascript+module" \
-          --data-binary "@Vless_workers_pages/nat64套壳版混淆.js"
+          -H "Content-Type: multipart/form-data; boundary=$boundary" \
+          --data-binary "@payload.txt"
